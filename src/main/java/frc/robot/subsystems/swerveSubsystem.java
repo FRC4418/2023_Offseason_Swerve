@@ -8,19 +8,23 @@ import javax.swing.text.StyleContext.SmallAttributeSet;
 
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Constants.kinematics;
+import frc.robot.commands.swerveDrive;
 
 public class SwerveSubsystem extends SubsystemBase {
-  /** Creates a new swerveSubsystem. */
-
+  private final Field2d field = new Field2d();
 
   private final swerveModule fl = new swerveModule(
     Ports.motorPorts.frontLeftDrive, 
@@ -59,6 +63,17 @@ public class SwerveSubsystem extends SubsystemBase {
     false);
 
   private final AHRS gyro = new AHRS();
+
+  SwerveDriveOdometry m_Odometry = new SwerveDriveOdometry(
+    kinematics.kDriveKinematics,
+    gyro.getRotation2d(),
+    new SwerveModulePosition[]{
+      fl.getPosition(),
+      fr.getPosition(),
+      br.getPosition(),
+      bl.getPosition()},
+      new Pose2d(5.0, 13.5, new Rotation2d())
+      );
   
   public SwerveSubsystem() {
     new Thread(() ->  {
@@ -67,6 +82,8 @@ public class SwerveSubsystem extends SubsystemBase {
         zeroHeading();
       } catch (Exception e){}
     }).start();
+  
+    SmartDashboard.putData("Field", field);
   }
   public void zeroHeading(){
     gyro.reset();
@@ -81,6 +98,7 @@ public class SwerveSubsystem extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     SmartDashboard.putNumber("Robot Heading", getHeading());
+    field.setRobotPose(m_Odometry.getPoseMeters());
   }
   public void stopModules(){
     fl.stop();

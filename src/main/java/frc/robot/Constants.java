@@ -66,6 +66,7 @@ public final class Constants {
     public static double kMaxAngularAccelerationPerSecond = 1.0;
     public static double kMaxTeleOpSpeed = 2.0;
     public static double kMaxTeleOpAngularSpeed = 1.5;
+    public static double kEncoderCPR = 2048;
   }
   public static class kinematics{
     public static final double kTrackWidth = Units.inchesToMeters(21);

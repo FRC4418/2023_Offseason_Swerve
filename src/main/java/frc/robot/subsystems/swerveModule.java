@@ -8,12 +8,15 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.DriveConstants;
 
 public class swerveModule extends SubsystemBase {
   /** Creates a new swerveModule. */
@@ -90,6 +93,15 @@ public void setDesiredStates(SwerveModuleState state){
 public void stop(){
   driveMotor.set(0);
   turningMotor.set(0);
+}
+private double nativeUnitsToDistanceMeters(double sensorCounts){
+  double motorRotations = (double)sensorCounts / DriveConstants.kEncoderCPR;
+  double wheelRoations = motorRotations / 6;
+  double positionMeters = wheelRoations * (2 * Math.PI * Units.inchesToMeters(2));
+  return positionMeters;
+}
+public SwerveModulePosition getPosition(){
+  return new SwerveModulePosition(nativeUnitsToDistanceMeters(driveMotor.getSelectedSensorPosition()), new Rotation2d(getAbsoluteEncoder()));
 }
   @Override
   public void periodic() {
