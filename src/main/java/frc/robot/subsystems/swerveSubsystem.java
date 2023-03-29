@@ -4,14 +4,24 @@
 
 package frc.robot.subsystems;
 
+import javax.swing.text.StyleContext.SmallAttributeSet;
+
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Ports;
+import frc.robot.Constants.kinematics;
 
-public class swerveSubsystem extends SubsystemBase {
+public class SwerveSubsystem extends SubsystemBase {
   /** Creates a new swerveSubsystem. */
+
+
   private final swerveModule fl = new swerveModule(
     Ports.motorPorts.frontLeftDrive, 
     Ports.motorPorts.frontLeftTurn, 
@@ -50,7 +60,7 @@ public class swerveSubsystem extends SubsystemBase {
 
   private final AHRS gyro = new AHRS();
   
-  public swerveSubsystem() {
+  public SwerveSubsystem() {
     new Thread(() ->  {
       try{
         Thread.sleep(1000);
@@ -61,9 +71,42 @@ public class swerveSubsystem extends SubsystemBase {
   public void zeroHeading(){
     gyro.reset();
   }
-
+  public double getHeading(){
+    return Math.IEEEremainder(gyro.getAngle(), 360);
+  }
+  public Rotation2d getRotation2d(){
+    return gyro.getRotation2d();
+  }
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    SmartDashboard.putNumber("Robot Heading", getHeading());
+  }
+  public void stopModules(){
+    fl.stop();
+    fr.stop();
+    bl.stop();
+    br.stop();
+  }
+  public ChassisSpeeds getChassisSpeeds(){
+    var frontLeftState = fl.getState();
+    var frontRightState = fr.getState();
+    var backLeftState = bl.getState();
+    var backRightState = br.getState();
+    ChassisSpeeds chassisSpeeds = kinematics.kDriveKinematics.toChassisSpeeds(frontLeftState, frontRightState, backLeftState, backRightState);
+    return chassisSpeeds;
+  }
+  public void setModuleStates(SwerveModuleState[] desiredStates){
+    //ALL VALUES FOR DESATURATION WILL NEED TO BE UPDATED
+    SwerveDriveKinematics.desaturateWheelSpeeds(
+      desiredStates, 
+      getChassisSpeeds(), 
+      Constants.moduleConstants.kPhysicalMaxSpeedPerSeconds, 
+      Constants.moduleConstants.kPhysicalMaxSpeedPerSeconds, 
+      Constants.moduleConstants.kPhysicalMaxSpeedPerSeconds);
+    fr.setDesiredStates(desiredStates[0]);
+    fl.setDesiredStates(desiredStates[1]);
+    br.setDesiredStates(desiredStates[2]);
+    bl.setDesiredStates(desiredStates[3]);
   }
 }

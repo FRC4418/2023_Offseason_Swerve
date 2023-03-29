@@ -20,4 +20,7 @@ public class Ports {
         public static final int kFrontRightDriveAbsoluteEncoderPort = 1;
         public static final int kBackRightDriveAbsoluteEncoderPort = 3;
     }
+    public interface controllerPorts{
+        public static final int driver = 1;
+    }
 }

@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 
 /**
@@ -49,5 +51,31 @@ public final class Constants {
     public static final double kBackLeftDriveAbsoluteEncoderOffsetRad = -1.252;
     public static final double kFrontRightDriveAbsoluteEncoderOffsetRad = -1.816;
     public static final double kBackRightDriveAbsoluteEncoderOffsetRad = -4.811;
+  }
+  public static class moduleTranslations{
+    public static final Translation2d frontRightTrans = new Translation2d(0.5,0.5);
+    public static final Translation2d frontLeftTrans = new Translation2d(0.5,0.5);
+    public static final Translation2d backRightTrans = new Translation2d(0.5,0.5);
+    public static final Translation2d backLeftTrans = new Translation2d(0.5,0.5);
+  }
+  public static class controllerConstants{
+    public static final double deadBand = 0.3;
+  }
+  public static class DriveConstants{
+    public static double kMaxAccelerationUnitsPerSecond = 1.0;
+    public static double kMaxAngularAccelerationPerSecond = 1.0;
+    public static double kMaxTeleOpSpeed = 2.0;
+    public static double kMaxTeleOpAngularSpeed = 1.5;
+  }
+  public static class kinematics{
+    public static final double kTrackWidth = Units.inchesToMeters(21);
+    public static final double kWheelBase = Units.inchesToMeters(25);
+    
+    public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
+      new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
+      new Translation2d(kWheelBase/ 2, kTrackWidth / 2),
+      new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
+      new Translation2d(-kWheelBase / 2, kTrackWidth / 2)
+    );
   }
 }
