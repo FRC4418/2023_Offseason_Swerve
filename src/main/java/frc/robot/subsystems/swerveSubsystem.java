@@ -9,7 +9,12 @@ import java.util.List;
 import javax.swing.text.StyleContext.SmallAttributeSet;
 
 import com.kauailabs.navx.frc.AHRS;
+import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.commands.PPSwerveControllerCommand;
+import com.pathplanner.lib.server.PathPlannerServer;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -24,6 +29,9 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Ports;
@@ -78,6 +86,18 @@ public class SwerveSubsystem extends SubsystemBase {
       br.getPosition(),
       bl.getPosition()}
       );
+
+  public SwerveDrivePoseEstimator estimator = new SwerveDrivePoseEstimator(
+    kinematics.kDriveKinematics, getRotation2d(), 
+    new SwerveModulePosition[]{
+      fr.getPosition(),
+      fl.getPosition(),
+      br.getPosition(),
+      bl.getPosition()
+    }, 
+    new Pose2d());
+
+  
   
   public SwerveSubsystem() {
     new Thread(() ->  {
@@ -86,7 +106,6 @@ public class SwerveSubsystem extends SubsystemBase {
         zeroHeading();
       } catch (Exception e){}
     }).start();
-  
 
   }
   public void zeroHeading(){
@@ -101,7 +120,25 @@ public class SwerveSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    estimator.update(
+      getRotation2d(),
+      new SwerveModulePosition[]{
+        fr.getPosition(), 
+        fl.getPosition(), 
+        br.getPosition(), 
+        bl.getPosition()
+      });
+    
+    m_Odometry.update(
+      gyro.getRotation2d(), 
+      new SwerveModulePosition[]{
+        fr.getPosition(), 
+        fl.getPosition(), 
+        br.getPosition(), 
+        bl.getPosition()
+    });
     SmartDashboard.putNumber("Robot Heading", getHeading());
+    SmartDashboard.putString("Current Pose", m_Odometry.getPoseMeters().toString());
   }
   public void stopModules(){
     fl.stop();
@@ -129,5 +166,39 @@ public class SwerveSubsystem extends SubsystemBase {
     fl.setDesiredStates(desiredStates[1]);
     br.setDesiredStates(desiredStates[2]);
     bl.setDesiredStates(desiredStates[3]);
+  }
+  public void resetOdometry(Pose2d pose){
+    m_Odometry.resetPosition(
+      pose.getRotation(), 
+      new SwerveModulePosition[]{
+        fr.getPosition(), 
+        fl.getPosition(), 
+        br.getPosition(), 
+        bl.getPosition()
+      }, pose);
+  }
+  public Pose2d getPose(){
+    return m_Odometry.getPoseMeters();
+  }
+  public Command drivePath(PathPlannerTrajectory traj, boolean isFirstPath){
+    PathPlannerServer.sendActivePath(traj.getStates());
+    return new SequentialCommandGroup(
+      new InstantCommand(() -> {
+        if(isFirstPath){
+          this.resetOdometry(traj.getInitialHolonomicPose());
+        }
+      }, this),
+      new PPSwerveControllerCommand(
+        traj,
+        this::getPose,
+        kinematics.kDriveKinematics,
+        new PIDController(0.2,0,0),
+        new PIDController(0.2,0,0),
+        new PIDController(0.2,0,0),
+        this::setModuleStates,
+        false,
+        this
+    )
+    );
   }
 }
