@@ -12,6 +12,8 @@ import frc.robot.subsystems.SwerveSubsystem;
 
 import com.stuypulse.stuylib.input.gamepads.AutoGamepad;
 
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -19,12 +21,17 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 
 public class RobotContainer {
+  private final Field2d field = new Field2d();
+  
 
   private final SwerveSubsystem swerveSubsystem = new SwerveSubsystem();
 
   private final AutoGamepad driver = new AutoGamepad(Ports.controllerPorts.driver);
 
   public RobotContainer() {
+    SmartDashboard.putData("Field", field);
+    field.setRobotPose(swerveSubsystem.m_Odometry.getPoseMeters());
+    
     swerveSubsystem.setDefaultCommand(new swerveDrive(
       swerveSubsystem,
       () -> driver.getRightX(), 
@@ -36,7 +43,7 @@ public class RobotContainer {
   }
 
   private void configureButtonBindings(){
-    driver.getLeftButton().onTrue( new zeroRobotHeading(swerveSubsystem));
+    driver.getLeftButton().onTrue(new zeroRobotHeading(swerveSubsystem));
   }
 
 
