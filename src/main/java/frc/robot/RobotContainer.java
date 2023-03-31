@@ -66,18 +66,18 @@ public class RobotContainer
                                                                                                     OperatorConstants.LEFT_Y_DEADBAND),
                                                                          () -> MathUtil.applyDeadband(driverXbox.getLeftY(),
                                                                                                       OperatorConstants.LEFT_X_DEADBAND),
-                                                                         () -> driverXbox.getRawAxis(2), false);
+                                                                         () -> driverXbox.getRawAxis(4), false);
     TeleopDrive simClosedFieldRel = new TeleopDrive(drivebase,
                                                     () -> MathUtil.applyDeadband(driverXbox.getLeftX(),
                                                                                  OperatorConstants.LEFT_Y_DEADBAND),
                                                     () -> MathUtil.applyDeadband(driverXbox.getLeftY(),
                                                                                  OperatorConstants.LEFT_X_DEADBAND),
-                                                    () -> driverXbox.getRawAxis(2), () -> true, false, true);
+                                                    () -> driverXbox.getRawAxis(4), () -> true, false, true);
     TeleopDrive closedFieldRel = new TeleopDrive(
         drivebase,
         () -> MathUtil.applyDeadband(driverController.getX(), OperatorConstants.LEFT_Y_DEADBAND),
         () -> MathUtil.applyDeadband(driverController.getY(), OperatorConstants.LEFT_X_DEADBAND),
-        () -> -driverController.getRawAxis(3), () -> true, false, true);
+        () -> -driverController.getRawAxis(4), () -> true, false, true);
 
     drivebase.setDefaultCommand(!RobotBase.isSimulation() ? closedAbsoluteDrive : closedFieldAbsoluteDrive);
   }
