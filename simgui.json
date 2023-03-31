@@ -3,7 +3,9 @@
     "types": {
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/Field": "Field2d",
-      "/SmartDashboard/Pigeon 2 [13]": "Gyro"
+      "/SmartDashboard/Pigeon 2 [13]": "Gyro",
+      "/SmartDashboard/field": "Field2d",
+      "/SmartDashboard/navX-Sensor[1]": "Gyro"
     },
     "windows": {
       "/SmartDashboard/Field": {
@@ -13,6 +15,11 @@
         "XModules": {
           "style": "Hidden"
         },
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/field": {
         "window": {
           "visible": true
         }
