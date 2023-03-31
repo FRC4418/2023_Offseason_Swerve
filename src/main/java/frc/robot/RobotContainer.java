@@ -6,10 +6,6 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.doNothing;
-import frc.robot.commands.swerveDrive;
-import frc.robot.commands.testAutoCmd;
-import frc.robot.commands.zeroRobotHeading;
-import frc.robot.subsystems.SwerveSubsystem;
 
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
@@ -29,8 +25,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
 
   private final Field2d field = new Field2d();
-  
-  private final SwerveSubsystem swerveSubsystem = new SwerveSubsystem();
 
   private final AutoGamepad driver = new AutoGamepad(Ports.controllerPorts.driver);
 
@@ -39,26 +33,18 @@ public class RobotContainer {
   public RobotContainer() {
     PathPlannerServer.startServer(5811);
     SmartDashboard.putData("Field", field);
-    field.setRobotPose(swerveSubsystem.m_Odometry.getPoseMeters());
     
-    swerveSubsystem.setDefaultCommand(new swerveDrive(
-      swerveSubsystem,
-      () -> driver.getRightX(), 
-      () -> driver.getRightY(), 
-      () -> driver.getLeftY(), 
-      () -> driver.getRawDPadUp()
-      ));
     configureButtonBindings();
   }
 
   private void configureButtonBindings(){
-    driver.getLeftButton().onTrue(new zeroRobotHeading(swerveSubsystem));
+    
   }
 
 
 
   public Command getAutonomousCommand() {
 
-    return new testAutoCmd(swerveSubsystem);
+    return new doNothing();
   }
 }
