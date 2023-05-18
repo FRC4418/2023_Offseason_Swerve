@@ -8,6 +8,7 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AbsoluteDrive;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
+import frc.robot.commands.AbsoluteFieldDrive;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 
@@ -42,14 +43,13 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    AbsoluteDrive closedAbsoluteDrive = new AbsoluteDrive(
+    AbsoluteFieldDrive fieldRelativeDrive = new AbsoluteFieldDrive(
       drivebase, 
-      () -> driver.getLeftX(),
-      () -> driver.getLeftY(), 
+      () -> driver.getLeftX(), 
+      () ->driver.getLeftY(), 
       () -> driver.getRightX(), 
-      () -> driver.getRightY(), 
-      false
-      );
+      false);
+    drivebase.setDefaultCommand(fieldRelativeDrive);
   }
 
 
