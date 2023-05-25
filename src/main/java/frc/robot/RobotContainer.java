@@ -45,9 +45,12 @@ public class RobotContainer {
   public RobotContainer() {
     AbsoluteFieldDrive fieldRelativeDrive = new AbsoluteFieldDrive(
       drivebase, 
-      () -> driver.getLeftX(), 
-      () ->driver.getLeftY(), 
-      () -> driver.getRightX(), 
+      // () ->  MathUtil.applyDeadband(Constants.OperatorConstants.LEFT_X_DEADBAND, driver.getLeftX()),
+      // () -> MathUtil.applyDeadband(Constants.OperatorConstants.LEFT_Y_DEADBAND, driver.getLeftY()),  
+      // () -> MathUtil.applyDeadband(Constants.OperatorConstants.Rot_DEADBAND, driver.getRightX()), 
+      () -> driver.getLeftX(),
+      () -> driver.getLeftY(),
+      () -> driver.getRightX(),
       false);
     drivebase.setDefaultCommand(fieldRelativeDrive);
   }
