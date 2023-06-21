@@ -3,8 +3,8 @@
   "optimalVoltage": 12,
   "imu": {
     "type": "navx",
-    "id": 0,
-    "canbus": "null"
+    "id": 13,
+    "canbus": "canivore"
   },
   "invertedIMU": true,
   "modules": [
