@@ -50,7 +50,7 @@ public class RobotContainer {
       // () -> MathUtil.applyDeadband(Constants.OperatorConstants.Rot_DEADBAND, driver.getRightX()), 
       () -> driver.getLeftY(),
       () -> driver.getLeftX(),
-      () -> driver.getRightX(),
+      () ->  driver.getRightX(),
       false);
     drivebase.setDefaultCommand(fieldRelativeDrive);
   }

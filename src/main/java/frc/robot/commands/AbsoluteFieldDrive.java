@@ -52,7 +52,8 @@ public class AbsoluteFieldDrive extends CommandBase
     addRequirements(swerve);
   }
 
-  @Override
+
+@Override
   public void initialize()
   {
   }
@@ -65,7 +66,7 @@ public class AbsoluteFieldDrive extends CommandBase
     // Get the desired chassis speeds based on a 2 joystick module.
 
     ChassisSpeeds desiredSpeeds = swerve.getTargetSpeeds(vX.getAsDouble(), vY.getAsDouble(),
-                                                         new Rotation2d(heading.getAsDouble() * Math.PI));
+                                                         new Rotation2d(heading.getAsDouble()));
 
     // Limit velocity to prevent tippy
     Translation2d translation = SwerveController.getTranslation2d(desiredSpeeds);
@@ -76,7 +77,7 @@ public class AbsoluteFieldDrive extends CommandBase
     SmartDashboard.putString("Translation", translation.toString());
 
     // Make the robot move
-    swerve.drive(translation, desiredSpeeds.omegaRadiansPerSecond, true, isOpenLoop);
+    swerve.drive(translation, desiredSpeeds.omegaRadiansPerSecond, false, isOpenLoop);
 
   }
 
