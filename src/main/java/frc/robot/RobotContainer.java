@@ -14,11 +14,19 @@ import frc.robot.subsystems.SwerveSubsystem;
 
 import java.io.File;
 
+import com.pathplanner.lib.PathConstraints;
+import com.pathplanner.lib.PathPlanner;
+import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.commands.PPSwerveControllerCommand;
+import com.pathplanner.lib.server.PathPlannerServer;
 import com.stuypulse.stuylib.input.gamepads.AutoGamepad;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -51,6 +59,7 @@ public class RobotContainer {
       () -> driver.getLeftY(),
       () -> driver.getLeftX(),
       () ->  driver.getRightX(),
+      // () -> MathUtil.applyDeadband(Constants.OperatorConstants.Rot_DEADBAND, driver.getRightX()),
       false);
     drivebase.setDefaultCommand(fieldRelativeDrive);
   }
@@ -63,9 +72,30 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand() {
+  public Command drivePath(String nameOfPath, boolean isFirstPath) {
+    PathPlannerTrajectory drivePath1 = PathPlanner.loadPath(nameOfPath, new PathConstraints(0.5, 3.0));
+    PathPlannerServer.sendActivePath(drivePath1.getStates());
     // An example command will be run in autonomous
-    return Autos.exampleAuto(m_exampleSubsystem);
+    return new SequentialCommandGroup((
+      new InstantCommand(() -> {
+        if(isFirstPath){
+          drivebase.resetOdometry(drivePath1.getInitialHolonomicPose());
+        }
+      })
+    ),
+    new PPSwerveControllerCommand(
+      drivePath1,
+      drivebase::getPose , 
+      new PIDController(0.1, 0, 0), 
+      new PIDController(0.1, 0, 0), 
+      new PIDController(0.1, 0, 0), 
+      drivebase::setChassisSpeeds, 
+      drivebase) 
+    );
+  }
+
+  public Command getAutonomousCommand(){
+    return drivePath("Path1", true);
   }
   
   public void setDriveMode()
