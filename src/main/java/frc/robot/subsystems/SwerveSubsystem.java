@@ -9,6 +9,10 @@ import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
+import com.pathplanner.lib.commands.PPSwerveControllerCommand;
+import com.pathplanner.lib.server.PathPlannerServer;
+
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -17,7 +21,11 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.Drivebase;
+
 import java.io.File;
 import java.util.List;
 import java.util.Map;
@@ -282,45 +290,27 @@ public class SwerveSubsystem extends SubsystemBase
     swerveDrive.addVisionMeasurement(new Pose2d(3, 3, Rotation2d.fromDegrees(65)), Timer.getFPGATimestamp(), true, 4);
   }
 
-  /**
-   * Factory to fetch the PathPlanner command to follow the defined path.
-   *
-   * @param path             Path planner path to specify.
-   * @param constraints      {@link PathConstraints} for {@link com.pathplanner.lib.PathPlanner#loadPathGroup} function
-   *                         limiting velocity and acceleration.
-   * @param eventMap         {@link java.util.HashMap} of commands corresponding to path planner events given as
-   *                         strings.
-   * @param translation      The {@link PIDConstants} for the translation of the robot while following the path.
-   * @param rotation         The {@link PIDConstants} for the rotation of the robot while following the path.
-   * @param useAllianceColor Automatically transform the path based on alliance color.
-   * @return PathPlanner command to follow the given path.
-   */
-  public Command creatPathPlannerCommand(String path, PathConstraints constraints, Map<String, Command> eventMap,
-                                         PIDConstants translation, PIDConstants rotation, boolean useAllianceColor)
-  {
-    List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup(path, constraints);
-//    SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(
-//      Pose2d supplier,
-//      Pose2d consumer- used to reset odometry at the beginning of auto,
-//      PID constants to correct for translation error (used to create the X and Y PID controllers),
-//      PID constants to correct for rotation error (used to create the rotation controller),
-//      Module states consumer used to output to the drive subsystem,
-//      Should the path be automatically mirrored depending on alliance color. Optional- defaults to true
-//   )
-    if (autoBuilder == null)
-    {
-      autoBuilder = new SwerveAutoBuilder(
-          swerveDrive::getPose,
-          swerveDrive::resetOdometry,
-          translation,
-          rotation,
-          swerveDrive::setChassisSpeeds,
-          eventMap,
-          useAllianceColor,
-          this
-      );
-    }
+  public Command drivePath(boolean isFirstPath, String nameOfPath){
+    PathPlannerTrajectory drivePath1 = PathPlanner.loadPath(nameOfPath, new PathConstraints(1.5, 2.0));
+    PathPlannerServer.sendActivePath(drivePath1.getStates());
 
-    return autoBuilder.fullAuto(pathGroup);
+    // return new SequentialCommandGroup(
+    
+    return new SequentialCommandGroup(new InstantCommand(() -> {
+      // Reset odometry for the first path you run during auto
+      if(isFirstPath){
+        Pose2d e = drivePath1.getInitialPose();  
+        //Pose2d flippedPose = new Pose2d(e.getX(),e.getY(),e.getRotation().minus(Rotation2d.fromDegrees(180)));
+        //driveTrain.resetOdometry(flippedPose);
+        this.resetOdometry(e);
+      }
+    }), new PPSwerveControllerCommand(
+      drivePath1, 
+      this::getPose, 
+      new PIDController(0.1, 0, 0), 
+      new PIDController(0.1, 0, 0), 
+      new PIDController(0.1, 0, 0), 
+      this::setChassisSpeeds, 
+      this));
   }
 }
