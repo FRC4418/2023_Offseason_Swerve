@@ -13,6 +13,7 @@ import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 import com.pathplanner.lib.server.PathPlannerServer;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -40,7 +41,6 @@ import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
 public class SwerveSubsystem extends SubsystemBase
 {
-
   /**
    * Swerve drive object.
    */
@@ -292,6 +292,30 @@ public class SwerveSubsystem extends SubsystemBase
 
   public Command drivePath(boolean isFirstPath, String nameOfPath){
     PathPlannerTrajectory drivePath1 = PathPlanner.loadPath(nameOfPath, new PathConstraints(1.5, 2.0));
+    PathPlannerServer.sendActivePath(drivePath1.getStates());
+
+    // return new SequentialCommandGroup(
+    
+    return new SequentialCommandGroup(new InstantCommand(() -> {
+      // Reset odometry for the first path you run during auto
+      if(isFirstPath){
+        Pose2d e = drivePath1.getInitialPose();  
+        //Pose2d flippedPose = new Pose2d(e.getX(),e.getY(),e.getRotation().minus(Rotation2d.fromDegrees(180)));
+        //driveTrain.resetOdometry(flippedPose);
+        this.resetOdometry(e);
+      }
+    }), new PPSwerveControllerCommand(
+      drivePath1, 
+      this::getPose, 
+      new PIDController(0.1, 0, 0), 
+      new PIDController(0.1, 0, 0), 
+      new PIDController(0.1, 0, 0), 
+      this::setChassisSpeeds, 
+      this));
+  }
+
+  public Command drivePath(boolean isFirstPath, PathPlannerTrajectory traj){
+    PathPlannerTrajectory drivePath1 = traj;
     PathPlannerServer.sendActivePath(drivePath1.getStates());
 
     // return new SequentialCommandGroup(
