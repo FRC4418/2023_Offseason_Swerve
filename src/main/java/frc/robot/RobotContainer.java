@@ -8,6 +8,7 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AbsoluteDrive;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
+import frc.robot.commands.TeleopDrive;
 import frc.robot.commands.AbsoluteFieldDrive;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
@@ -40,8 +41,9 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
 
-  private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
-  "falcon"));
+  private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),"falcon"));
+
+//  private final Vision vision = new Vision(drivebase);
 
   private AutoGamepad driver = new AutoGamepad(0);
 
@@ -62,40 +64,22 @@ public class RobotContainer {
       // () -> MathUtil.applyDeadband(Constants.OperatorConstants.Rot_DEADBAND, driver.getRightX()),
       false);
     drivebase.setDefaultCommand(fieldRelativeDrive);
+    // TeleopDrive driveMethod = new TeleopDrive(
+    //   drivebase, 
+    //   () -> driver.getLeftY(), 
+    //   () -> driver.getLeftX(), 
+    //   () -> driver.getRightX(), 
+    //   () -> driver.getRawDPadDown(), 
+    //   true, 
+    //   false);
+    //   drivebase.setDefaultCommand(driveMethod);
   }
-
   
 
-
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
-  public Command drivePath(String nameOfPath, boolean isFirstPath) {
-    PathPlannerTrajectory drivePath1 = PathPlanner.loadPath(nameOfPath, new PathConstraints(0.5, 3.0));
-    PathPlannerServer.sendActivePath(drivePath1.getStates());
-    // An example command will be run in autonomous
-    return new SequentialCommandGroup((
-      new InstantCommand(() -> {
-        if(isFirstPath){
-          drivebase.resetOdometry(drivePath1.getInitialHolonomicPose());
-        }
-      })
-    ),
-    new PPSwerveControllerCommand(
-      drivePath1,
-      drivebase::getPose , 
-      new PIDController(0.1, 0, 0), 
-      new PIDController(0.1, 0, 0), 
-      new PIDController(0.1, 0, 0), 
-      drivebase::setChassisSpeeds, 
-      drivebase) 
-    );
-  }
-
   public Command getAutonomousCommand(){
-    return drivePath("Path1", true);
+    //return drivebase.drivePath(true,"Path1");
+    //return drivebase.drivePath(true, vision.makePath2Target());
+    return new InstantCommand();
   }
   
   public void setDriveMode()
