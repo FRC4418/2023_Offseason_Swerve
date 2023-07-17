@@ -4,19 +4,14 @@
 
 package frc.robot.subsystems;
 
+import java.io.File;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class SwerveSubsystem extends SubsystemBase {
   /** Creates a new SwerveSubsystem. */
   public SwerveSubsystem(File directory) {
-    SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
-    try
-    {
-      swerveDrive = new SwerveParser(directory).createSwerveDrive();
-    } catch (Exception e)
-    {
-      throw new RuntimeException(e);
-    }
+
   }
 
   @Override
