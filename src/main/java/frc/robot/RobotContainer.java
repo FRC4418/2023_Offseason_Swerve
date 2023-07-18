@@ -43,7 +43,7 @@ public class RobotContainer {
       () -> MathUtil.applyDeadband(cont.getLeftX(), OperatorConstants.LEFT_X_DEADBAND), 
       () -> MathUtil.applyDeadband(cont.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND), 
       () -> cont.getRightY(), 
-      () -> !cont.getDPadDown().getAsBoolean(), false, true);
+      () -> !cont.getDPadDown().getAsBoolean(), false, false);
 
     drivebase.setDefaultCommand(closedTeleopDrive);
   }
